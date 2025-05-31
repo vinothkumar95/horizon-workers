@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizon CPU Processing Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 50%, #9b59b6 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #f39c12, #e74c3c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .config-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .cpu-architecture {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-title {
+            color: #f39c12;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ecf0f1;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .range-input {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+        
+        .range-value {
+            background: rgba(52, 152, 219, 0.8);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .cpu-visual {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .cpu-core {
+            background: linear-gradient(45deg, #34495e, #2c3e50);
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cpu-core.active {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+        }
+        
+        .cpu-core::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .cpu-core:hover::before {
+            left: 100%;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .metric-label {
+            color: #bdc3c7;
+            font-size: 0.9em;
+        }
+        
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .api-limiter {
+            background: rgba(231, 76, 60, 0.2);
+            border: 2px solid #e74c3c;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .warning-icon {
+            color: #f39c12;
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+        }
+        
+        .optimization-tips {
+            background: rgba(46, 204, 113, 0.2);
+            border: 2px solid #2ecc71;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .tip-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #2ecc71;
+        }
+        
+        .real-time-monitor {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .worker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .worker-indicator {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+        }
+        
+        .worker-indicator.working {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            animation: work 1s infinite;
+        }
+        
+        .worker-indicator.idle {
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+        }
+        
+        @keyframes work {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Horizon CPU Processing Calculator</h1>
+            <p>Configure your parameters and watch the magic happen in real-time!</p>
+        </div>
+        
+        <div class="main-grid">
+            <div class="config-panel">
+                <h2 class="section-title">⚙️ Configuration Panel</h2>
+                
+                <div class="form-group">
+                    <label>Total Records to Process</label>
+                    <input type="number" id="totalRecords" class="form-control" value="500000" placeholder="Enter total records">
+                </div>
+                
+                <div class="form-group">
+                    <label>Processing Time per Record (seconds)</label>
+                    <div class="range-container">
+                        <input type="range" id="processingTimeMin" class="range-input" min="1" max="120" value="40">
+                        <span class="range-value" id="minTimeValue">40s</span>
+                        <span>to</span>
+                        <input type="range" id="processingTimeMax" class="range-input" min="1" max="120" value="90">
+                        <span class="range-value" id="maxTimeValue">90s</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>API Rate Limit (requests/second)</label>
+                    <input type="number" id="apiRateLimit" class="form-control" value="10" placeholder="Max API calls per second">
+                </div>
+                
+                <div class="form-group">
+                    <label>Number of Horizon Workers</label>
+                    <div class="range-container">
+                        <input type="range" id="workerCount" class="range-input" min="1" max="32" value="8">
+                        <span class="range-value" id="workerValue">8</span>
+                    </div>
+                </div>
+                
+                <button class="calculate-btn" onclick="calculateProcessing()">🧮 Calculate & Simulate</button>
+            </div>
+            
+            <div class="cpu-architecture">
+                <h2 class="section-title">🧠 CPU Architecture</h2>
+                <p>Modern CPUs have multiple cores, each capable of running parallel processes:</p>
+                
+                <div class="form-group">
+                    <label>CPU Cores Available</label>
+                    <div class="range-container">
+                        <input type="range" id="cpuCores" class="range-input" min="1" max="64" value="8">
+                        <span class="range-value" id="coreValue">8</span>
+                    </div>
+                </div>
+                
+                <div id="cpuVisual" class="cpu-visual"></div>
+                
+                <div class="api-limiter">
+                    <h4><span class="warning-icon">⚠️</span>CPU Cores ≠ Workers!</h4>
+                    <p><strong>Common Misconception:</strong> 1 core = 1 worker. <strong>Reality:</strong> Each core can handle multiple workers through context switching, but optimal performance usually means workers ≤ cores for CPU-intensive tasks.</p>
+                </div>
+                
+                <div style="background: rgba(46, 204, 113, 0.2); border: 2px solid #2ecc71; border-radius: 10px; padding: 15px; margin: 15px 0;">
+                    <h4 style="color: #2ecc71; margin-bottom: 10px;">🎯 The Truth About Workers vs Cores:</h4>
+                    <ul style="margin-left: 20px; line-height: 1.8;">
+                        <li><strong>CPU-bound tasks:</strong> Workers = Cores (optimal)</li>
+                        <li><strong>I/O-bound tasks:</strong> Workers > Cores (waiting for API/DB)</li>
+                        <li><strong>Mixed workload:</strong> Start with 2x cores, tune from there</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="metrics-grid" id="metricsGrid">
+            <!-- Metrics will be populated by JavaScript -->
+        </div>
+        
+        <div class="progress-container">
+            <h3>📊 Processing Progress Simulation</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div id="progressText">Ready to start simulation...</div>
+        </div>
+        
+        <div class="real-time-monitor">
+            <h3 class="section-title">👀 Real-Time Worker Monitor</h3>
+            <div id="workerGrid" class="worker-grid"></div>
+            <div id="workerStats"></div>
+        </div>
+        
+        <div class="optimization-tips" id="optimizationTips">
+            <h3 class="section-title">💡 Smart Optimization Tips</h3>
+            <!-- Tips will be populated by JavaScript -->
+        </div>
+    </div>
+    
+    <script>
+        let simulationRunning = false;
+        let workers = [];
+        
+        // Update range displays
+        document.getElementById('processingTimeMin').addEventListener('input', function() {
+            document.getElementById('minTimeValue').textContent = this.value + 's';
+        });
+        
+        document.getElementById('processingTimeMax').addEventListener('input', function() {
+            document.getElementById('maxTimeValue').textContent = this.value + 's';
+        });
+        
+        document.getElementById('workerCount').addEventListener('input', function() {
+            document.getElementById('workerValue').textContent = this.value;
+            updateWorkerGrid();
+        });
+        
+        document.getElementById('cpuCores').addEventListener('input', function() {
+            document.getElementById('coreValue').textContent = this.value;
+            updateCPUVisual();
+        });
+        
+        function updateCPUVisual() {
+            const cores = parseInt(document.getElementById('cpuCores').value);
+            const cpuVisual = document.getElementById('cpuVisual');
+            cpuVisual.innerHTML = '';
+            
+            for (let i = 0; i < cores; i++) {
+                const core = document.createElement('div');
+                core.className = 'cpu-core';
+                core.innerHTML = `Core ${i + 1}`;
+                cpuVisual.appendChild(core);
+            }
+        }
+        
+        function updateWorkerGrid() {
+            const workerCount = parseInt(document.getElementById('workerCount').value);
+            const workerGrid = document.getElementById('workerGrid');
+            workerGrid.innerHTML = '';
+            workers = [];
+            
+            for (let i = 0; i < workerCount; i++) {
+                const worker = document.createElement('div');
+                worker.className = 'worker-indicator idle';
+                worker.innerHTML = `W${i + 1}`;
+                worker.id = `worker-${i}`;
+                workerGrid.appendChild(worker);
+                workers.push({ id: i, status: 'idle', processed: 0 });
+            }
+        }
+        
+        function calculateProcessing() {
+            const totalRecords = parseInt(document.getElementById('totalRecords').value);
+            const minTime = parseInt(document.getElementById('processingTimeMin').value);
+            const maxTime = parseInt(document.getElementById('processingTimeMax').value);
+            const apiLimit = parseInt(document.getElementById('apiRateLimit').value);
+            const workerCount = parseInt(document.getElementById('workerCount').value);
+            const cpuCores = parseInt(document.getElementById('cpuCores').value);
+            
+            const avgProcessingTime = (minTime + maxTime) / 2;
+            
+            // Calculate bottleneck
+            const maxRecordsPerSecondByWorkers = workerCount / avgProcessingTime;
+            const maxRecordsPerSecondByAPI = apiLimit;
+            const actualThroughput = Math.min(maxRecordsPerSecondByWorkers, maxRecordsPerSecondByAPI);
+            
+            const totalTimeSeconds = totalRecords / actualThroughput;
+            const totalTimeHours = totalTimeSeconds / 3600;
+            const totalTimeDays = totalTimeHours / 24;
+            
+            // Sequential processing time for comparison
+            const sequentialTime = totalRecords * avgProcessingTime;
+            const sequentialHours = sequentialTime / 3600;
+            const sequentialDays = sequentialHours / 24;
+            
+            const speedupFactor = sequentialTime / totalTimeSeconds;
+            
+            // Calculate CPU utilization
+            const optimalWorkers = Math.min(cpuCores, apiLimit);
+            const cpuEfficiency = Math.min(workerCount / cpuCores, 1) * 100;
+            
+            // Update metrics
+            updateMetrics({
+                totalTime: formatTime(totalTimeSeconds),
+                throughput: actualThroughput.toFixed(2),
+                speedup: speedupFactor.toFixed(1),
+                cpuEfficiency: cpuEfficiency.toFixed(1),
+                bottleneck: maxRecordsPerSecondByWorkers < maxRecordsPerSecondByAPI ? 'Workers' : 'API Rate Limit',
+                optimalWorkers: optimalWorkers,
+                sequentialTime: formatTime(sequentialTime)
+            });
+            
+            // Generate optimization tips
+            generateOptimizationTips({
+                workerCount,
+                cpuCores,
+                apiLimit,
+                actualThroughput,
+                maxRecordsPerSecondByWorkers,
+                maxRecordsPerSecondByAPI,
+                optimalWorkers
+            });
+            
+            // Start simulation
+            startSimulation(totalRecords, actualThroughput);
+        }
+        
+        function updateMetrics(data) {
+            const metricsGrid = document.getElementById('metricsGrid');
+            metricsGrid.innerHTML = `
+                <div class="metric-card">
+                    <div class="metric-value" style="color: #3498db;">${data.totalTime}</div>
+                    <div class="metric-label">Total Processing Time</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color: #2ecc71;">${data.throughput}</div>
+                    <div class="metric-label">Records/Second</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color: #e74c3c;">${data.speedup}x</div>
+                    <div class="metric-label">Speedup vs Sequential</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color: #f39c12;">${data.cpuEfficiency}%</div>
+                    <div class="metric-label">CPU Efficiency</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color: #9b59b6;">${data.bottleneck}</div>
+                    <div class="metric-label">Current Bottleneck</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color: #1abc9c;">${data.sequentialTime}</div>
+                    <div class="metric-label">Sequential Time</div>
+                </div>
+            `;
+        }
+        
+        function generateOptimizationTips(data) {
+            const tips = [];
+            
+            if (data.workerCount > data.cpuCores * 2) {
+                tips.push(`🔧 You have ${data.workerCount} workers but only ${data.cpuCores} CPU cores. For I/O-bound tasks (like API calls), try 2x cores. For CPU-intensive tasks, match workers to cores.`);
+            }
+            
+            if (data.workerCount === data.cpuCores) {
+                tips.push(`✅ Perfect for CPU-intensive tasks! Your ${data.workerCount} workers match your ${data.cpuCores} cores.`);
+            }
+            
+            if (data.workerCount < data.cpuCores && data.maxRecordsPerSecondByWorkers > data.maxRecordsPerSecondByAPI) {
+                tips.push(`⚡ Since you're API-limited, you could increase workers to ${Math.min(data.cpuCores * 2, data.apiLimit)} to handle I/O waiting time.`);
+            }
+            
+            if (data.maxRecordsPerSecondByAPI < data.maxRecordsPerSecondByWorkers) {
+                tips.push(`🚨 API rate limit (${data.apiLimit}/sec) is your bottleneck! Consider increasing API limits or implementing request batching.`);
+            }
+            
+            if (data.workerCount < data.optimalWorkers) {
+                tips.push(`⚡ You could increase workers to ${data.optimalWorkers} to fully utilize your resources.`);
+            }
+            
+            if (data.actualThroughput < 1) {
+                tips.push(`⏰ Very slow processing detected. Consider optimizing your processing logic or scaling horizontally.`);
+            }
+            
+            const tipsContainer = document.getElementById('optimizationTips');
+            const tipsHTML = tips.map(tip => `<div class="tip-item">${tip}</div>`).join('');
+            tipsContainer.innerHTML = `<h3 class="section-title">💡 Smart Optimization Tips</h3>${tipsHTML}`;
+        }
+        
+        function formatTime(seconds) {
+            if (seconds < 60) return `${seconds.toFixed(1)}s`;
+            if (seconds < 3600) return `${(seconds / 60).toFixed(1)}m`;
+            if (seconds < 86400) return `${(seconds / 3600).toFixed(1)}h`;
+            return `${(seconds / 86400).toFixed(1)}d`;
+        }
+        
+        function startSimulation(totalRecords, throughput) {
+            if (simulationRunning) return;
+            simulationRunning = true;
+            
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const totalTime = totalRecords / throughput * 1000; // Convert to milliseconds
+            const updateInterval = 100; // Update every 100ms
+            const progressPerUpdate = (throughput * updateInterval / 1000) / totalRecords * 100;
+            
+            let currentProgress = 0;
+            let recordsProcessed = 0;
+            
+            const interval = setInterval(() => {
+                currentProgress += progressPerUpdate;
+                recordsProcessed += throughput * updateInterval / 1000;
+                
+                if (currentProgress >= 100) {
+                    currentProgress = 100;
+                    recordsProcessed = totalRecords;
+                    clearInterval(interval);
+                    simulationRunning = false;
+                }
+                
+                progressFill.style.width = currentProgress + '%';
+                progressText.innerHTML = `Processed: ${Math.floor(recordsProcessed).toLocaleString()} / ${totalRecords.toLocaleString()} records (${currentProgress.toFixed(1)}%)`;
+                
+                // Update worker status randomly
+                workers.forEach((worker, index) => {
+                    if (Math.random() < 0.3) { // 30% chance to change status
+                        const workerElement = document.getElementById(`worker-${index}`);
+                        if (worker.status === 'idle') {
+                            worker.status = 'working';
+                            workerElement.className = 'worker-indicator working';
+                        } else {
+                            worker.status = 'idle';
+                            workerElement.className = 'worker-indicator idle';
+                        }
+                    }
+                });
+                
+            }, updateInterval);
+        }
+        
+        // Initialize
+        updateCPUVisual();
+        updateWorkerGrid();
+        calculateProcessing(); // Run initial calculation
+        
+        // CPU Architecture Info
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add some educational content about CPU cores
+            const cpuInfo = document.createElement('div');
+            cpuInfo.innerHTML = `
+                <h4 style="margin: 20px 0 10px 0; color: #f39c12;">🎯 CPU Core Facts:</h4>
+                <ul style="margin-left: 20px; line-height: 1.6;">
+                    <li><strong>Minimum:</strong> 1 core (single-core processors)</li>
+                    <li><strong>Common:</strong> 4-8 cores (consumer CPUs)</li>
+                    <li><strong>High-end:</strong> 16-32 cores (server CPUs)</li>
+                    <li><strong>Maximum:</strong> 128+ cores (enterprise servers)</li>
+                    <li><strong>Sweet Spot:</strong> Match workers to cores for optimal performance</li>
+                </ul>
+            `;
+            document.querySelector('.cpu-architecture').appendChild(cpuInfo);
+        });
+    </script>
+</body>
+</html>
